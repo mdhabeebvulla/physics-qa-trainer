@@ -79,15 +79,18 @@ def train_pipeline():
     # Training setup
     training_args = TrainingArguments(
         output_dir="./trained_model",
-        num_train_epochs=15,
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=4,
-        warmup_steps=50,
-        weight_decay=0.01,
-        logging_dir="./logs",
-        fp16=torch.cuda.is_available(),
+        num_train_epochs=3,  # Reduced from 15
+        per_device_train_batch_size=2,  # Reduced from 4
+        gradient_accumulation_steps=2,
+        gradient_checkpointing=True,  # Save memory
+        optim="adafactor",  # Lighter optimizer
+        learning_rate=5e-5,
+        logging_steps=1,
+        save_strategy="no",  # Disable saving during training
         report_to="none",
-        save_strategy="epoch"
+        fp16=False,  # Disable for CPU
+        dataloader_pin_memory=False,
+        dataloader_num_workers=2,
     )
     
     trainer = Trainer(
