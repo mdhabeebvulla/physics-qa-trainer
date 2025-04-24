@@ -1,4 +1,6 @@
 import os
+import logging
+logging.getLogger("pdfplumber").setLevel(logging.ERROR)
 import pdfplumber
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer
 from datasets import Dataset
@@ -39,11 +41,7 @@ def process_all_pdfs(data_dir="data"):
         if filename.endswith(".pdf"):
             qna_pairs += extract_qna_from_pdf(os.path.join(data_dir, filename))
     return qna_pairs
-def prepare_dataset(qa_pairs):
-    #tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-125M")
-    tokenizer.pad_token = tokenizer.eos_token
-
+def prepare_dataset(qa_pairs, tokenizer):  # Accept tokenizer as argument
     input_ids_list = []
     attention_mask_list = []
     labels_list = []
