@@ -11,9 +11,12 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
-    
+
     steps:
     - uses: actions/checkout@v3
+      with:
+        lfs: true  # ✅ Checkout LFS pointers and initialize LFS
+
     - name: Install Git LFS
       run: |
         sudo apt-get update
@@ -27,16 +30,20 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y python3-dev git
         python -m pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
-
 
     - name: Train model
       run: python train.py --max_steps 50 --save_steps 25
 
-    - name: Commit model
+    - name: Track model files with LFS
+      run: |
+        git lfs track "*.safetensors"
+        git lfs track "*.pt"
+        git lfs track "*.onnx"
+        git add .gitattributes
+
+    - name: Commit and Push model
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
@@ -44,4 +51,4 @@ jobs:
         git config --global user.email "actions@github.com"
         git add trained_model/
         git commit -m "Update model"
-        git push
+        git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
